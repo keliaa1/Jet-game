@@ -157,3 +157,46 @@ def render_jet(surface,x,y,angle,scale=30):
     rect=render_jet.cache[key].get_rect(center=(x,y))
     surface.blit(render_jet.cache[key],rect.topleft)
     return rect
+# ==============================
+# HUD + Joystick
+# ==============================
+class HUDDisplay:
+    def __init__(self,width,height):
+        self.width=width
+        self.height=height
+        self.font=pygame.font.SysFont('Arial',24,bold=True)
+        self.speed_lbl=self.font.render("Speed:",True,COLOR_WHITE)
+        self.score_lbl=self.font.render("Score:",True,COLOR_WHITE)
+        self.bg=pygame.Surface((width,50),pygame.SRCALPHA)
+        pygame.draw.rect(self.bg,(0,0,0,160),(0,0,width,50),border_radius=10)
+    def render(self,surf,speed,score):
+        surf.blit(self.bg,(10,10))
+        spd_text=self.font.render(f"{abs(speed):.1f}",True,(180,220,255))
+        scr_text=self.font.render(f"{int(score)}",True,(255,220,180))
+        shadow_color=(0,0,0)
+        surf.blit(self.font.render(f"{abs(speed):.1f}",True,shadow_color),(101,21))
+        surf.blit(self.font.render(f"{int(score)}",True,shadow_color),(self.width-79,21))
+        surf.blit(self.speed_lbl,(20,20))
+        surf.blit(spd_text,(100,20))
+        surf.blit(self.score_lbl,(self.width-150,20))
+        surf.blit(scr_text,(self.width-80,20))
+
+def draw_joystick(surface,center,x_val,y_val,prev_pos=None):
+    max_radius=40
+    joy_range=20
+    joy_x=int(center[0]+((x_val-512)/512.0)*joy_range)
+    joy_y=int(center[1]+((y_val-512)/512.0)*joy_range)
+    if prev_pos:
+        joy_x=int(prev_pos[0]*0.8+joy_x*0.2)
+        joy_y=int(prev_pos[1]*0.8+joy_y*0.2)
+    for angle in range(0,360,15):
+        rad=math.radians(angle)
+        x=int(center[0]+max_radius*math.cos(rad))
+        y=int(center[1]+max_radius*math.sin(rad))
+        pygame.draw.circle(surface,(100,100,100),(x,y),2)
+    dot_surf=pygame.Surface((20,20),pygame.SRCALPHA)
+    for i in range(10,0,-1):
+        color=(255,255,255,int(25*i))
+        pygame.draw.circle(dot_surf,color,(10,10),i)
+    surface.blit(dot_surf,(joy_x-10,joy_y-10))
+    return (joy_x,joy_y)

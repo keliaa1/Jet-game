@@ -200,3 +200,37 @@ def draw_joystick(surface,center,x_val,y_val,prev_pos=None):
         pygame.draw.circle(dot_surf,color,(10,10),i)
     surface.blit(dot_surf,(joy_x-10,joy_y-10))
     return (joy_x,joy_y)
+# ==============================
+# GAME LOOP
+# ==============================
+def start_sim(serial_port):
+    pygame.init()
+    screen=pygame.display.set_mode((WINDOW_WIDTH,WINDOW_HEIGHT),pygame.DOUBLEBUF|pygame.HWSURFACE)
+    pygame.display.set_caption("Jet Fighter Simulator")
+    pygame.event.set_allowed([QUIT,KEYDOWN])
+    stars=StarSimulation(200,WINDOW_WIDTH,WINDOW_HEIGHT)
+    hud=HUDDisplay(WINDOW_WIDTH,WINDOW_HEIGHT)
+    clock=pygame.time.Clock()
+    jet_state={'x':WINDOW_WIDTH//2,'y':WINDOW_HEIGHT*2//3,'roll':0.0,'pitch':0.0,'velocity_x':0.0,'velocity_y':0.0,'speed':0.0,'size':30,'roll_max':45.0,'pitch_max':30.0,'max_speed':500.0}
+    game_state={'score':0,'x_val':512,'y_val':512,'running':True}
+    joy_center=(80,WINDOW_HEIGHT-80)
+    last_time=time.time()
+    frame_count=0
+    fps_update_time=last_time
+    print("🎮 Jet Fighter Simulator started")
+    while game_state['running']:
+        current_time=time.time()
+        dt=min(current_time-last_time,0.1)
+        last_time=current_time
+        frame_count+=1
+        if current_time-fps_update_time>=1.0:
+            fps=frame_count/(current_time-fps_update_time)
+            if fps<55: print(f"Performance: {fps:.1f} FPS")
+            frame_count=0
+            fps_update_time=current_time
+        game_state['running']=handle_events(game_state,jet_state)
+        update_game_state(serial_port,game_state,jet_state,dt)
+        render_frame(screen,stars,hud,game_state,jet_state,joy_center,dt)
+        clock.tick(60)
+    serial_port.close()
+    pygame

@@ -135,3 +135,25 @@ class StarSimulation:
             pygame.draw.circle(star_surf,color+(120,),(s//2,s//2),size+1)
         pygame.draw.circle(star_surf,color,(s//2,s//2),size)
         return star_surf
+# ==============================
+# JET DRAWING
+# ==============================
+def render_jet(surface,x,y,angle,scale=30):
+    if not hasattr(render_jet,'cache'):
+        render_jet.cache={}
+    angle_deg=int(math.degrees(angle)/5)*5
+    key=(scale,angle_deg)
+    if key not in render_jet.cache:
+        jet_surf = pygame.Surface((scale*2,scale*2),pygame.SRCALPHA)
+        points=[(scale,0),(scale*1.2,scale*0.5),(scale*1.1,scale*1.5),(scale,scale*2),
+                (scale*0.9,scale*1.5),(scale*0.8,scale*0.5)]
+        pygame.draw.polygon(jet_surf,(180,180,200),points)
+        pygame.draw.ellipse(jet_surf,(80,200,255),(scale*0.85,scale*0.5,scale*0.3,scale*0.5))
+        flame_surf=pygame.Surface((scale//2,scale//2),pygame.SRCALPHA)
+        pygame.draw.polygon(flame_surf,(255,140,0,200),[(0,0),(scale//2,scale//4),(0,scale//2)])
+        jet_surf.blit(flame_surf,(scale*0.6,scale*1.2),special_flags=pygame.BLEND_ADD)
+        rotated=pygame.transform.rotate(jet_surf,angle_deg)
+        render_jet.cache[key]=rotated
+    rect=render_jet.cache[key].get_rect(center=(x,y))
+    surface.blit(render_jet.cache[key],rect.topleft)
+    return rect
